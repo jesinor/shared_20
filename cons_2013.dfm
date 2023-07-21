@@ -378,7 +378,7 @@ object FCons_2013: TFCons_2013
       Category = 'Consulta'
       Caption = '&Vista Previa'
       Hint = 'Vista Previa '
-      ImageIndex = 1
+      ImageIndex = 41
       ShortCut = 16470
       OnExecute = mVisPreExecute
     end
