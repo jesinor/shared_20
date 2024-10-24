@@ -2,8 +2,8 @@ object ppVistaPre: TppVistaPre
   Left = 208
   Top = 105
   Caption = 'Vista Previa'
-  ClientHeight = 350
-  ClientWidth = 760
+  ClientHeight = 477
+  ClientWidth = 838
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -49,8 +49,8 @@ object ppVistaPre: TppVistaPre
   object Visor: TppViewer
     Left = 0
     Top = 122
-    Width = 760
-    Height = 209
+    Width = 838
+    Height = 336
     Align = alClient
     BevelOuter = bvLowered
     Color = clBtnShadow
@@ -72,8 +72,8 @@ object ppVistaPre: TppVistaPre
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 331
-    Width = 760
+    Top = 458
+    Width = 838
     Height = 19
     Panels = <>
     SimplePanel = True
@@ -81,7 +81,7 @@ object ppVistaPre: TppVistaPre
   object dxRibbon1: TdxRibbon
     Left = 0
     Top = 0
-    Width = 760
+    Width = 838
     Height = 122
     Hint = 'doble clic minimiza la barra'
     BarManager = mgr
@@ -3465,9 +3465,11 @@ object ppVistaPre: TppVistaPre
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
       000000000000}
   end
-  object SaveDialog1: TSaveDialog
-    DefaultExt = '*.RAF'
-    Filter = 'Archivos de Informes|*.RAF|Todos los archivos|*.*'
+  object grabarDlg: TSaveDialog
+    DefaultExt = 'pdf'
+    Filter = 
+      'Archivos pdf|*.pdf|Todos los archivos|*.*|Archivos de Informes|*' +
+      '.RAF'
     Left = 251
     Top = 168
   end

@@ -21,8 +21,8 @@ uses
     cxControls, cxGraphics, cxLookAndFeels, cxLookAndFeelPainters,
     JvAppStorage, JvAppIniStorage, JvComponentBase, JvFormPlacement, dxBar,
     cxClasses, dxRibbon, dxRibbonSkins, dxRibbonCustomizationForm,
-    System.ImageList, vcl.ImgList, ppSMTPCustom, ppVar,
-    ppIniStorage, ayuda, dxSkinsCore, dxSkinTheBezier;
+    System.ImageList, vcl.ImgList, ppSMTPCustom, ppVar, ppPDFDevice,
+    ppIniStorage, ayuda, dxSkinsCore;
 
 type
     { TppPrintPreview }
@@ -45,7 +45,7 @@ type
         Ayuda: TAction;
         Abrir: TAction;
         imagenes: TImageList;
-        SaveDialog1: TSaveDialog;
+        grabarDlg: TSaveDialog;
         StatusBar1: TStatusBar;
         AutoSearch: TAction;
         Configurar: TAction;
@@ -73,7 +73,7 @@ type
         dxBarLargeButton11: TdxBarLargeButton;
         dxBarLargeButton13: TdxBarLargeButton;
         acPDF: TAction;
-    dxBarLargeButton14: TdxBarLargeButton;
+        dxBarLargeButton14: TdxBarLargeButton;
         procedure FormCreate(Sender: TObject);
         procedure VisorPrintStateChange(Sender: TObject);
         procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -104,7 +104,7 @@ type
         procedure ConfigurarExecute(Sender: TObject);
         procedure acMailExecute(Sender: TObject);
         procedure acPDFExecute(Sender: TObject);
-    procedure AyudaExecute(Sender: TObject);
+        procedure AyudaExecute(Sender: TObject);
 
     private
         // FStatusBar: TStatusBar;
@@ -115,6 +115,10 @@ type
         FNombrepdf, FNombreText: string;
         FUrl: string;
         FPage: string;
+        FIni: TIniFile;
+
+        function getLastPath(): string;
+        procedure setLastPath(const ruta: string);
 
         procedure SetearDatos;
         procedure EnHint(Sender: TObject);
@@ -417,6 +421,20 @@ begin
     Screen.Cursor := crDefault;
 end;
 
+function TppVistaPre.getLastPath: string;
+var
+  FRuta: string;
+begin
+  FRuta := extractfilePath( application.exename );
+
+  FIni := TIniFile.Create(FRuta + 'ini/ruta.ini');
+  try
+    result := FIni.ReadString('RUTA', 'impresion', FRuta );
+  finally
+    FIni.Free;
+  end;
+end;
+
 procedure TppVistaPre.VisorMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
@@ -438,12 +456,12 @@ procedure TppVistaPre.GrabarExecute(Sender: TObject);
 var
     lArchivo: tppArchiveDevice;
 begin
-    SaveDialog1.FileName := Visor.Report.ArchiveFileName;
-    if SaveDialog1.execute then
+    GrabarDlg.FileName := Visor.Report.ArchiveFileName;
+    if GrabarDlg.execute then
         try
             Screen.Cursor := crHourGlass;
             lArchivo := tppArchiveDevice.create(self);
-            lArchivo.FileName := SaveDialog1.FileName;
+            lArchivo.FileName := GrabarDlg.FileName;
             lArchivo.Publisher := Visor.Report.Publisher;
             lArchivo.PageSetting := psAll;
             Visor.Report.PrintToDevices;
@@ -454,23 +472,48 @@ begin
 end;
 
 procedure TppVistaPre.acPDFExecute(Sender: TObject);
+var
+  Reporte: TppReport;
+  PDFDevice: TppPDFDevice;
 begin
     if FNombrepdf = '' then
-        FNombrepdf := extractfilepath(application.ExeName) +
+        FNombrepdf := getLastPath + // extractfilepath(application.ExeName)
           // ExtractFileName(Visor.Report.ArchiveFileName);
           ExtractFileName(Visor.Report.TextFileName);
 
+    GrabarDlg.FileName := FNombrepdf;
+//    if (GrabarDlg.Execute) then
+//    try
+//        FNombrepdf := GrabarDlg.FileName;
+//
+//        Reporte := TppReport(Visor.Report);
+//        PDFDevice := TppPDFDevice.Create(Self);
+//        try
+//          PDFDevice.FileName := FNombrepdf;
+//
+//          Visor.Report.AllowPrintToFile := true;
+//          Visor.Report.DeviceType := 'PDF';
+//          Visor.Report.Device := TppDeviceType(PDFDevice);
+//
+//          Visor.Report.ShowPrintDialog := false;
+//          // Ejecutar la exportación del reporte a PDF
+//          Visor.Report.Print;
+//
+//        finally
+//          PDFDevice.Free;
+//          setLastPath( extractFilePath( FNombrepdf ));
+//        end;
     try
-        // Visor.Report.ShowPrintDialog := true;
+        Visor.Report.ShowPrintDialog := true;
         Visor.Report.AllowPrintToFile := true;
         Visor.Report.DeviceType := dtPDF;
         Visor.Report.ShowPrintDialog := true;
-
-        // Visor.Report.ArchiveFileName := FNombrePDF;
+        Visor.Report.ArchiveFileName := FNombrePDF;
         Visor.Report.TextFileName := FNombrepdf;
-        Visor.Report.PDFSettings.OpenPDFFile := True;
+//        Visor.Report.PDFSettings.OpenPDFFile := True;
         Visor.Report.Print;
     finally
+        setLastPath( extractFilePath( FNombrepdf ));
         Visor.Report.DeviceType := dtScreen;
         Visor.Report.ShowPrintDialog := false;
     end;
@@ -805,6 +848,20 @@ end;
 procedure TppVistaPre.SethelpItem(const Value: Integer);
 begin
     FhelpItem := Value;
+end;
+
+procedure TppVistaPre.setLastPath(const ruta: string);
+var
+  FRuta: string;
+begin
+  FRuta := extractfilePath( application.exename );
+  FIni := TIniFile.Create( FRuta + 'ini/ruta.ini');
+  try
+      FIni.Writestring('RUTA', 'impresion', ruta );
+  finally
+    FIni.Free;
+  end;
+
 end;
 
 procedure TppVistaPre.SetNombrepdf(const Value: string);
